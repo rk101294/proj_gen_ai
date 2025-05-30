@@ -12,8 +12,8 @@ NewsBot is a GenAI-powered web application that enables users to extract and ana
 - ⚙️ Uses **LangChain**, **FAISS**, and **Google Generative AI**
 
 #####################################################
-
-🗂️ Project Structure
+############# Project Structure #####################
+#####################################################
 
 gen_ai_proj/
 │
@@ -24,30 +24,49 @@ gen_ai_proj/
 ├── .env # Environment variables (not pushed to GitHub)
 └── README.md # Project documentation
 
+#####################################################
+########### Setup in Local Machine and github  ######
+#####################################################
+
+## 🧑‍💻 Create repository: Create a new repo on GitHub
+  Go to: https://github.com/rk101294?tab=repositories --> Click New (green button) to create a new repository --> Give your repo a name, e.g., proj_gen_ai
+  (Optional) Add a description --> Choose Public or Private as you want --> Do NOT initialize with README (since you have one locally)
 
 ## 🧑‍💻 Local Setup
-1. Clone the Repository
+1. Create and Activate Virtual Environment
+  python -m venv venv
+  # Activate on Windows
+  .\venv\Scripts\activate
+  # Activate on Mac/Linux
+  source venv/bin/activate
 
+2. Install Dependencies
+  pip install -r requirements.txt
+
+3. Set Up Environment Variables
+  GOOGLE_API_KEY=your-google-gemini-api-key
+
+4. Run the Streamlit App Locally
+  streamlit run app.py
+
+5. In VS Code, do
+  ```bash
+  git init
+  git add .
+  git commit -m "Initial commit - add Streamlit Gen AI project files"
+  git remote add origin https://github.com/rk101294/proj_gen_ai.git
+  git branch -M main
+  git push -u origin main
+
+OR
+if your code is already on GitHub, to do a local setup follow:-
+ Clone the Repository
 ```bash
-git clone https://github.com/rk101294/gen_ai_proj.git
+git clone https://github.com/rk101294/proj_gen_ai.git
 cd gen_ai_proj
 
-2. Create and Activate Virtual Environment
-python -m venv venv
-# Activate on Windows
-.\venv\Scripts\activate
-# Activate on Mac/Linux
-source venv/bin/activate
-
-3. Install Dependencies
-pip install -r requirements.txt
-
-4. Set Up Environment Variables
-GOOGLE_API_KEY=your-google-gemini-api-key
-
-5. Run the Streamlit App Locally
-streamlit run app.py
-
+#####################################################
+########### Deployment on Google Cloud Run ##########
 #####################################################
 
 ☁️ Deployment on Google Cloud Run (via Cloud Build)
