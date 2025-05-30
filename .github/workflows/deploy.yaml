@@ -1,40 +1,41 @@
-name: CI - Streamlit App Check
+name: 🚀 Deploy to Cloud Run
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  build:
+  deploy:
+    name: 📦 Build & Deploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: ⬇️ Checkout repository
+      - name: ⬇️ Checkout code
         uses: actions/checkout@v3
 
-      - name: 🐍 Set up Python
-        uses: actions/setup-python@v4
+      - name: 🔐 Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          python-version: '3.10'
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: 📦 Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+      - name: 🔧 Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: news-bot-461411
+          install_components: 'beta'
 
-      - name: 🧪 Run Streamlit check (headless)
+      - name: 📦 Build & Push Docker image to Artifact Registry
         run: |
-          streamlit run app.py --server.headless true &
-          sleep 10
-          echo "✅ Streamlit app started successfully (simulated test)"
+          IMAGE="us-central1-docker.pkg.dev/news-bot-461411/news-bot-repo/proj_gen_ai"
+          gcloud builds submit --tag $IMAGE .
 
-      - name: 🧪 Run Streamlit check (headless)
-        env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      - name: 🚀 Deploy to Cloud Run
         run: |
-          echo "GOOGLE_API_KEY=${GOOGLE_API_KEY}" > .env
-          streamlit run app.py --server.headless true &
-          sleep 10
-          echo "✅ Streamlit app ran with .env successfully"
+          IMAGE="us-central1-docker.pkg.dev/news-bot-461411/news-bot-repo/proj_gen_ai"
+          gcloud run deploy proj-gen-ai \
+            --image $IMAGE \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --port 8080
