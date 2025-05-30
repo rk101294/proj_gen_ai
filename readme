@@ -1,6 +1,6 @@
-# 📰 RockyBot: News Research Tool with Gemini + Streamlit
+# 📰 NewsBot: News Research Tool with Gemini + Streamlit
 
-RockyBot is a GenAI-powered web application that enables users to extract and analyze news articles using Google's Gemini API, LangChain, and Streamlit. The app supports URL-based document loading, intelligent embeddings with FAISS, and smart Q&A retrieval with source citations.
+NewsBot is a GenAI-powered web application that enables users to extract and analyze news articles using Google's Gemini API, LangChain, and Streamlit. The app supports URL-based document loading, intelligent embeddings with FAISS, and smart Q&A retrieval with source citations.
 
 ## 🚀 Features
 
@@ -72,8 +72,8 @@ CMD streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
 gcloud builds submit --config cloudbuild.yaml --project=gen-ai-proj-460914 .
 
 3. Deploy to Cloud Run
-gcloud run deploy rockybot-streamlit \
-  --image gcr.io/gen-ai-proj-460914/rockybot-streamlit \
+gcloud run deploy NewsBot-streamlit \
+  --image gcr.io/gen-ai-proj-460914/NewsBot-streamlit \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
