@@ -1,0 +1,15 @@
+# Prevent unnecessary files from being copied into Docker image
+__pycache__/
+*.pyc
+*.pkl
+*.log
+*.db
+.env
+.cache/
+*.ipynb
+tests/
+.idea/
+.vscode/
+.DS_Store
+.git
+.gitignore

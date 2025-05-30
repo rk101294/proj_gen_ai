@@ -1,0 +1,86 @@
+# 📰 RockyBot: News Research Tool with Gemini + Streamlit
+
+RockyBot is a GenAI-powered web application that enables users to extract and analyze news articles using Google's Gemini API, LangChain, and Streamlit. The app supports URL-based document loading, intelligent embeddings with FAISS, and smart Q&A retrieval with source citations.
+
+## 🚀 Features
+
+- 🔗 Enter up to **3 news article URLs**
+- 📄 Automatically **extracts, splits, and indexes** content
+- 💬 Ask **natural language questions** about the articles
+- 🧠 Powered by **Gemini 2.0 Flash** for contextual answers
+- 📚 Displays **source citations** for answers
+- ⚙️ Uses **LangChain**, **FAISS**, and **Google Generative AI**
+
+#####################################################
+
+🗂️ Project Structure
+
+gen_ai_proj/
+│
+├── app.py # Main Streamlit application
+├── Dockerfile # Dockerfile for GCP deployment
+├── cloudbuild.yaml # Cloud Build configuration for GCP
+├── requirements.txt # Python dependencies
+├── .env # Environment variables (not pushed to GitHub)
+└── README.md # Project documentation
+
+
+## 🧑‍💻 Local Setup
+1. Clone the Repository
+
+```bash
+git clone https://github.com/rk101294/gen_ai_proj.git
+cd gen_ai_proj
+
+2. Create and Activate Virtual Environment
+python -m venv venv
+# Activate on Windows
+.\venv\Scripts\activate
+# Activate on Mac/Linux
+source venv/bin/activate
+
+3. Install Dependencies
+pip install -r requirements.txt
+
+4. Set Up Environment Variables
+GOOGLE_API_KEY=your-google-gemini-api-key
+
+5. Run the Streamlit App Locally
+streamlit run app.py
+
+#####################################################
+
+☁️ Deployment on Google Cloud Run (via Cloud Build)
+✅ Prerequisites
+Python 3.10+
+Google Cloud SDK installed and authenticated: gcloud auth login
+Enable required services: gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+
+🔁 Deployment Steps
+1. Confirm Dockerfile Configuration
+Ensure your Dockerfile contains:
+
+FROM python:3.10-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+EXPOSE 8080
+CMD streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
+
+2. Build and Push Docker Image to GCP
+gcloud builds submit --config cloudbuild.yaml --project=gen-ai-proj-460914 .
+
+3. Deploy to Cloud Run
+gcloud run deploy rockybot-streamlit \
+  --image gcr.io/gen-ai-proj-460914/rockybot-streamlit \
+  --platform managed \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --project=gen-ai-proj-460914 \
+  --update-env-vars GOOGLE_API_KEY="your-google-gemini-api-key"
+
+
+
+
+

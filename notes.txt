@@ -1,0 +1,33 @@
+You already have:
+
+app.py — Your Streamlit app
+
+Dockerfile — To containerize the app
+
+cloudbuild.yaml — To build and push the container
+
+requirements.txt — Python dependencies
+
+# to activate env
+.\venv\Scripts\Activate.ps1
+
+
+# Cloud build uses
+Cloud Build is a tool (from Google Cloud) that automates the process of building, testing, and deploying your code.
+You save your code on GitHub.
+Cloud Build sees the change.
+It automatically:
+Runs your tests
+Creates a Docker image (a ready-to-run package)
+Deploys it to your server
+
+# nest steps
+- Enable required services
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com --project=gen-ai-proj-460914
+- Submit build
+gcloud builds submit --config cloudbuild.yaml --project=gen-ai-proj-460914 .
+-Deploy to Cloud Run
+gcloud run deploy rockybot-streamlit --image gcr.io/gen-ai-proj-460914/rockybot-streamlit --platform managed --region us-central1 --allow-unauthenticated --project=gen-ai-proj-460914 --update-env-vars GOOGLE_API_KEY="AIzaSyAF-r96MjMm1Bz-URtcxVna4dVnYAzFN6o"
+
+
+
