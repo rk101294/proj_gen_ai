@@ -23,6 +23,16 @@ gen_ai_proj/
 ├── requirements.txt # Python dependencies
 ├── .env # Environment variables (not pushed to GitHub)
 └── README.md # Project documentation
+##
+Push code in github
+  Create a new repo on GitHub
+  Go to: https://github.com/rk101294?tab=repositories
+  Click New (green button) to create a new repository
+  Give your repo a name, e.g., proj_gen_ai
+  (Optional) Add a description
+  Choose Public or Private as you want
+  Do NOT initialize with README (since you have one locally)
+
 
 #####################################################
 ########### Setup in Local Machine and github  ######
@@ -31,6 +41,15 @@ gen_ai_proj/
 ## 🧑‍💻 Create repository: Create a new repo on GitHub
   Go to: https://github.com/rk101294?tab=repositories --> Click New (green button) to create a new repository --> Give your repo a name, e.g., proj_gen_ai
   (Optional) Add a description --> Choose Public or Private as you want --> Do NOT initialize with README (since you have one locally)
+
+Click Create repository
+  or push an existing repository from the command line
+    git init
+    git add .
+    git commit -m "Initial commit - add Streamlit Gen AI project files"
+    git remote add origin https://github.com/rk101294/proj_gen_ai.git
+    git branch -M main
+    git push -u origin main
 
 ## 🧑‍💻 Local Setup
 1. Create and Activate Virtual Environment
