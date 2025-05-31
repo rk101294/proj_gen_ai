@@ -109,6 +109,8 @@ gcloud run deploy NewsBot-streamlit \
   --project=gen-ai-proj-460914 \
   --update-env-vars GOOGLE_API_KEY="your-google-gemini-api-key"
 
+  ############### END ######################
+
 
 
 
