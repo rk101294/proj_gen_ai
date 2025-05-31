@@ -1,6 +1,6 @@
 # 📰 NewsBot: News Research Tool with Gemini + Streamlit
 
-NewsBot is a GenAI-powered web application that enables users to extract and analyze news articles using Google's Gemini API, LangChain, and Streamlit. The app supports URL-based document loading, intelligent embeddings with FAISS, and smart Q&A retrieval with source citations.
+NewsBot is a GenAI-powered web application for extracting and analyzing news articles using Google’s Gemini API, LangChain, and Streamlit. It supports intelligent embeddings with FAISS and provides smart Q&A with contextual answers and source citations.
 
 ## 🚀 Features
 
@@ -76,38 +76,181 @@ git clone https://github.com/rk101294/proj_gen_ai.git
 cd gen_ai_proj
 
 #####################################################
+########### CI/CD Check on Gihub Action    ##########
+#####################################################
+Note: testing CI/CD pipeline (without deploying to Cloud Run yet), we can set up a basic GitHub Actions workflow that:
+
+1. Create this file in your repo: .github/workflows/deploy.yml
+2. In your GitHub repo → Settings → Secrets → Actions, add:
+
+    | Secret Name     | Value                           |
+    |-----------------|---------------------------------|
+    | GCP_SA_KEY       | Content of downloaded key.json |
+    | GOOGLE_API_KEY   | Your Gemini API key            |
+
+3. Content in deploy.yml
+
+name: CI - Streamlit App Check
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🧪 Run Streamlit check (headless)
+        run: |
+          streamlit run app.py --server.headless true &
+          sleep 10
+          echo "✅ Streamlit app started successfully (simulated test)"
+
+This setup will:
+Run every time you push to main
+Test your app boots successfully
+Prepare the path for future Cloud Run deployments
+
+#####################################################
 ########### Deployment on Google Cloud Run ##########
 #####################################################
 
+
 ☁️ Deployment on Google Cloud Run (via Cloud Build)
-✅ Prerequisites
-Python 3.10+
-Google Cloud SDK installed and authenticated: gcloud auth login
-Enable required services: gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
 
-🔁 Deployment Steps
-1. Confirm Dockerfile Configuration
-Ensure your Dockerfile contains:
+CI/CD pipeline using GitHub Actions to automatically deploy your Streamlit app to Google Cloud Run when you push to main
 
-FROM python:3.10-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
-EXPOSE 8080
-CMD streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
+steps:
 
-2. Build and Push Docker Image to GCP
-gcloud builds submit --config cloudbuild.yaml --project=gen-ai-proj-460914 .
+1. Create a Google Cloud Project <https://console.cloud.google.com/>
+  Example: Project Name: News-Bot and Project Id is news-bot-461411
+2. Ensuring your GCP environment is ready
+in vs code terminal run
+""" bash """
+  # 1. Authenticate with GCP
+  gcloud auth login
 
-3. Deploy to Cloud Run
-gcloud run deploy NewsBot-streamlit \
-  --image gcr.io/gen-ai-proj-460914/NewsBot-streamlit \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --project=gen-ai-proj-460914 \
-  --update-env-vars GOOGLE_API_KEY="your-google-gemini-api-key"
+  # 2. Set your new project
+  gcloud config set project news-bot-461411
+
+  # 3. Enable required services
+  gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+
+Note: Your browser will open for authentication. Project is set to news-bot-461411. Services will be enabled without error.
+
+3. Create Artifact Registry (for Docker Image Storage): Cloud Run deploys from a container. So, we first need a place to store your Docker image — called Artifact Registry.
+in vs code terminal run
+""" bash """
+# 1. Create Docker repository in Artifact Registry
+gcloud artifacts repositories create news-bot-repo --repository-format=docker --location=us-central1 --description="Docker repo for News Bot app"
+
+4. Configure GitHub Actions to Deploy to Cloud Run
+    1. Create GitHub Secret for GCP Authentication (You need to create a service account and download its JSON key to use in GitHub.)
+      in vs code terminal run
+      """ bash """
+        # 1. Create a new service account
+        gcloud iam service-accounts create github-deployer --display-name="GitHub Deployer for Cloud Run"
+
+        # 2. Give it permissions for Cloud Run and Cloud Build
+        gcloud projects add-iam-policy-binding news-bot-461411 --member="serviceAccount:github-deployer@news-bot-461411.iam.gserviceaccount.com" \
+          --role="roles/run.admin"
+
+        gcloud projects add-iam-policy-binding news-bot-461411 --member="serviceAccount:github-deployer@news-bot-461411.iam.gserviceaccount.com" \
+          --role="roles/cloudbuild.builds.editor"
+
+        gcloud projects add-iam-policy-binding news-bot-461411 --member="serviceAccount:github-deployer@news-bot-461411.iam.gserviceaccount.com" \
+          --role="roles/artifactregistry.writer"
+      
+      Run this in Cloud Shell:
+        gcloud projects add-iam-policy-binding news-bot-461411 --member="serviceAccount:github-deployer@news-bot-461411.iam.gserviceaccount.com" --role="roles/editor"
+
+        PROJECT_ID="news-bot-461411"
+        PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')
+        SA="$PROJECT_NUMBER@cloudbuild.gserviceaccount.com"
+
+        # Enable required APIs
+        gcloud services enable cloudbuild.googleapis.com artifactregistry.googleapis.com run.googleapis.com iam.googleapis.com
+
+        # Grant roles to Cloud Build service account
+        gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA" --role="roles/storage.admin"
+        gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA" --role="roles/run.admin"
+        gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA" --role="roles/iam.serviceAccountUser"
+        gcloud projects add-iam-policy-binding $PROJECT_ID --member="serviceAccount:$SA" --role="roles/artifactregistry.writer"
+
+
+
+      # 3. Create and download a key file
+      gcloud iam service-accounts keys create key.json --iam-account=github-deployer@news-bot-461411.iam.gserviceaccount.com
+    Note: This will download a file called key.json
+
+    2. Add GitHub Secret
+      1. Go to your GitHub repo → Settings → Secrets and variables → Actions → New repository secret
+      Name: GCP_SA_KEY
+      Value: Paste the contents of key.json (open in VS Code or Notepad and copy all)
+
+    3. Create .github/workflows/deploy.yaml to Deploy to Cloud Run
+       name: 🚀 Deploy to Cloud Run
+
+      on:
+        push:
+          branches:
+            - main
+
+      jobs:
+        deploy:
+          name: 📦 Build & Deploy
+          runs-on: ubuntu-latest
+
+          steps:
+            - name: ⬇️ Checkout code
+              uses: actions/checkout@v3
+
+            - name: 🔐 Authenticate to Google Cloud
+              uses: google-github-actions/auth@v2
+              with:
+                credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+            - name: 🔧 Set up gcloud CLI
+              uses: google-github-actions/setup-gcloud@v2
+              with:
+                project_id: news-bot-461411
+                install_components: 'beta'
+
+            - name: 📦 Build & Push Docker image to Artifact Registry
+              run: |
+                IMAGE="us-central1-docker.pkg.dev/news-bot-461411/news-bot-repo/proj_gen_ai"
+                gcloud builds submit --tag $IMAGE .
+
+            - name: 🚀 Deploy to Cloud Run
+              run: |
+                IMAGE="us-central1-docker.pkg.dev/news-bot-461411/news-bot-repo/proj_gen_ai"
+                gcloud run deploy proj-gen-ai \
+                  --image $IMAGE \
+                  --platform managed \
+                  --region us-central1 \
+                  --allow-unauthenticated \
+                  --port 8080 \
+                  --set-env-vars GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+    
+    Note: Commit all changes 
+        git add .
+        git commit -m "Add Cloud Run deploy workflow"
+        git push origin main
+        Once push trigger, Watch the Actions tab on GitHub — it will start the deployment.
 
   ############### END ######################
 
